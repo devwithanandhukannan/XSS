@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stored XSS Demo</title>
+</head>
+<body>
+  <h2>Stored XSS Attack Demo</h2>
+
+  <form id="form">
+    <input id="name" placeholder="Product Name">
+    <input id="price" placeholder="Price">
+    <button type="submit">Add</button>
+  </form>
+
+  <hr>
+  <h3>Products</h3>
+  <div id="products"></div>
+
+  <script>
+    const API = "http://localhost:3000";
+    const products = document.getElementById("products");
+
+    document.getElementById("form").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      let name = document.getElementById("name").value;
+      let price = document.getElementById("price").value;
+
+      fetch(API + "/product", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          product_name: name,
+          price: price
+        })
+      }).then(() => {
+        loadProducts();
+      });
+    });
+
+    function loadProducts() {
+      fetch(API + "/products")
+        .then(res => res.json())
+        .then(data => {
+          let html = "";
+
+          data.forEach(p => {
+            // ❌ INTENTIONALLY VULNERABLE TO STORED XSS
+            console.log(p.product_name);
+            
+            html += `<p><b>${p.product_name}</b> - ₹${p.price}</p>`;
+          });
+
+          products.innerHTML = html;
+        });
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>

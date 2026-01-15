@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Reflected XSS – DB Based</title>
+</head>
+<body>
+
+<h2>Reflected XSS (Database Search)</h2>
+
+<form id="form">
+  <input name="q" id="q" placeholder="Search product">
+  <button type="submit">Search</button>
+</form>
+
+<hr>
+
+<h3>You searched for:</h3>
+<div id="searchTerm"></div>
+
+<h3>Results:</h3>
+<div id="results"></div>
+
+<script>
+  const API = "http://localhost:3000";
+
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get("q");
+
+  if (q) {
+    fetch(`${API}/search?q=${encodeURIComponent(q)}`)
+      .then(res => res.json())
+      .then(data => {
+
+        // ❌ REFLECTED XSS HERE
+        document.getElementById("searchTerm").innerHTML = data.search;
+
+        let html = "";
+
+        data.results.forEach(p => {
+          html += `<p>${p.product_name} - ₹${p.price}</p>`;
+        });
+
+        document.getElementById("results").innerHTML = html;
+      });
+  }
+
+  document.getElementById("form").addEventListener("submit", e => {
+    e.preventDefault();
+    const q = document.getElementById("q").value;
+    window.location = `?q=${encodeURIComponent(q)}`;
+  });
+</script>
+
+</body>
+</html>
