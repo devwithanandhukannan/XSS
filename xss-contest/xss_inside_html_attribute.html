@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attribute XSS Lab</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+        }
+        input {
+            width: 300px;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 8px 12px;
+        }
+        hr {
+            margin: 40px 0;
+        }
+        .case {
+            margin-bottom: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============================== CASE A ============================== -->
+<div class="case">
+    <h1>Case A</h1>
+    <p>Quotes are <b>NOT</b> encoded</p>
+    <p>Angle brackets are <b>ALLOWED</b></p>
+
+    <h2>Search</h2>
+    <input id="searchA" placeholder="Search here...">
+    <button onclick="searchA()">Search</button>
+
+    <div id="resultA"></div>
+
+    <script>
+        function searchA() {
+            const userInput = document.getElementById("searchA").value;
+
+            document.getElementById("resultA").innerHTML = `
+                <h3>Search Result</h3>
+                <input type="text" value="${userInput}">
+            `;
+        }
+    </script>
+
+    <!-- Payload -->
+    <!-- "><script>alert(1)</script> -->
+</div>
+
+<hr>
+
+<!-- ============================== CASE B ============================== -->
+<div class="case">
+    <h1>Case B</h1>
+    <p>Quotes are <b>NOT</b> encoded</p>
+    <p>Angle brackets <b>&lt; &gt;</b> are <b>BLOCKED</b></p>
+
+    <h2>Search</h2>
+    <input id="searchB" placeholder="Search here...">
+    <button onclick="searchB()">Search</button>
+
+    <div id="resultB"></div>
+
+    <script>
+        function searchB() {
+            let userInput = document.getElementById("searchB").value;
+
+            // ❌ Naive filter: only blocks angle brackets
+            userInput = userInput.replace(/</g, "")
+                                 .replace(/>/g, "");
+
+            document.getElementById("resultB").innerHTML = `
+                <h3>Search Result</h3>
+                <input type="text" value="${userInput}">
+            `;
+        }
+    </script>
+
+    <!-- Payload -->
+    <!-- " autofocus onfocus=alert(1) x=" -->
+</div>
+
+<hr>
+
+<!-- ============================== CASE C ============================== -->
+<div class="case">
+    <h1>Case C</h1>
+    <p>Scriptable attributes: <b>href / src / action</b></p>
+    <p>Quotes are <b>NOT</b> encoded</p>
+    <p>Angle brackets are <b>BLOCKED</b></p>
+
+    <h2>Search</h2>
+    <input id="searchC" placeholder="Search here...">
+    <button onclick="searchC()">Search</button>
+
+    <div id="resultC"></div>
+
+    <script>
+        function searchC() {
+            let userInput = document.getElementById("searchC").value;
+
+            // ❌ Block angle brackets only
+            userInput = userInput.replace(/</g, "")
+                                 .replace(/>/g, "");
+
+            document.getElementById("resultC").innerHTML = `
+                <h3>Search Result</h3>
+
+                <!-- Scriptable attribute: href -->
+                <a href="${userInput}">Click Result</a>
+
+                <br><br>
+
+                <!-- Scriptable attribute: src -->
+                <img src="${userInput}" width="1">
+
+                <br><br>
+
+                <!-- Scriptable attribute: action -->
+                <form action="${userInput}">
+                    <button type="submit">Submit</button>
+                </form>
+            `;
+        }
+    </script>
+
+    <!-- Payloads -->
+    <!-- javascript:alert(1) -->
+    <!-- " onmouseover=alert(1) x=" -->
+</div>
+
+</body>
+</html>

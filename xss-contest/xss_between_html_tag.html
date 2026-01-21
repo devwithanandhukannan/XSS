@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Search Demo</title>
+</head>
+<body>
+    
+    <!-- Vulnerable render area -->
+    <h1 id="disp"></h1>
+
+
+    <p>Welcome <span id="userinput"></span></p>
+
+    <input type="text" id="inputText">
+    <button onclick="saveToURL()">Save</button>
+
+    <script>
+        function saveToURL() {
+            let value = document.getElementById("inputText").value;
+            window.location.search = "name=" + encodeURIComponent(value);
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const name = params.get("name");
+
+        if (name) {
+            document.getElementById("disp").innerHTML = name;
+            document.getElementById("userinput").innerHTML = name;
+        }
+    </script>
+
+</body>
+</html>

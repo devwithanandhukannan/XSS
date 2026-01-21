@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JavaScript Context XSS Lab</title>
+</head>
+<body>
+
+<h1>JavaScript XSS Cases</h1>
+<p>Open DevTools → Console</p>
+
+<input id="input" placeholder="Enter payload">
+<button onclick="run()">Run</button>
+
+<hr>
+
+<pre id="output"></pre>
+
+<script>
+function sanitizeAngleBrackets(input) {
+    return input.replace(/</g, "").replace(/>/g, "");
+}
+
+function run() {
+    let userInput = document.getElementById("input").value;
+    document.getElementById("output").innerText = "";
+    console.clear();
+
+    /* ================= CASE 1 =================
+       Script tag allowed (classic reflected XSS)
+    */
+    document.getElementById("output").innerText += "CASE 1 executed\n";
+    document.getElementById("case1").innerHTML = `
+        <script>
+            var name = '${userInput}';
+            console.log("CASE 1:", name);
+        <\/script>
+    `;
+
+    /* ================= CASE 2 =================
+       Break out of JS string
+       Rules:
+       1. Close string
+       2. Execute JS
+       3. Comment rest
+    */
+    let js2 = `
+        <script>
+            var name = '${userInput}';
+            console.log("CASE 2:", name);
+        <\/script>
+    `;
+    document.getElementById("case2").innerHTML = js2;
+
+    /* ================= CASE 3 =================
+       Escaped quote but NOT escaped backslash
+    */
+    let escapedQuote = userInput.replace(/'/g, "\\'");
+    let js3 = `
+        <script>
+            var name = '${escapedQuote}';
+            console.log("CASE 3:", name);
+        <\/script>
+    `;
+    document.getElementById("case3").innerHTML = js3;
+
+    /* ================= CASE 4 =================
+       JavaScript using template literals
+    */
+    let js4 = `
+        <script>
+            var name = \`${userInput}\`;
+            console.log("CASE 4:", name);
+        <\/script>
+    `;
+    document.getElementById("case4").innerHTML = js4;
+
+    /* ================= CASE 5 =================
+       HTML encoding tricks inside JS
+       &apos;alert(1)&apos;
+    */
+    let htmlEncoded = userInput;
+    let js5 = `
+        <script>
+            var name = '${htmlEncoded}';
+            console.log("CASE 5:", name);
+        <\/script>
+    `;
+    document.getElementById("case5").innerHTML = js5;
+}
+</script>
+
+<!-- Render targets -->
+<div id="case1"></div>
+<div id="case2"></div>
+<div id="case3"></div>
+<div id="case4"></div>
+<div id="case5"></div>
+
+</body>
+</html>
